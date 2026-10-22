@@ -1,0 +1,26 @@
+.venv/
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+.DS_Store
+
+data/
+analysis_view/
+cache/
+uploads/
+best models/
+static/results/
+
+finaltest.py
+test.py
+mer.ipynb
+all_images_info.csv
+full_analysis.csv
+plane_embeddings.npz
+2learning.ipynb
+fold_comparison.csv
+plane_labels.csv
+
+r18/
+r34/
