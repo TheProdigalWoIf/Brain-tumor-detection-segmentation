@@ -75,4 +75,4 @@ py -3.12 -m venv .venv
 
 Полное описание решения — архитектура, препроцессинг, обоснование выбора
 моделей, метрики, ограничения, внедрение и защита данных:
-[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)
+[DOCUMENTATION.md](DOCUMENTATION.md)
