@@ -1,0 +1,360 @@
+/* Минималистичная светлая тема: один акцентный цвет, много воздуха. */
+
+/* Mulish — локальные файлы (вариативный шрифт, начертания 200–1000). */
+@font-face {
+    font-family: "Mulish";
+    font-style: normal;
+    font-weight: 200 1000;
+    font-display: swap;
+    src: url("fonts/mulish-cyrillic.woff2") format("woff2");
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+    font-family: "Mulish";
+    font-style: normal;
+    font-weight: 200 1000;
+    font-display: swap;
+    src: url("fonts/mulish-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --border: #e5e7eb;
+    --code-bg: #f3f4f6;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: "Mulish", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+main.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px 24px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.header-text {
+    max-width: 560px;
+}
+
+h1 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+h1 a:hover {
+    color: var(--accent);
+}
+
+.intro {
+    margin: 0;
+    color: var(--muted);
+}
+
+/* --- Сообщение об ошибке --------------------------------------------- */
+
+.error {
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background-color: #fef2f2;
+    color: #991b1b;
+}
+
+.error p {
+    margin: 0;
+}
+
+/* --- Форма загрузки --------------------------------------------------- */
+
+.upload-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.upload-form label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.upload-form input[type="file"] {
+    font: inherit;
+    color: var(--muted);
+}
+
+.upload-form button {
+    padding: 8px 20px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.upload-form button:hover {
+    background-color: var(--accent-hover);
+}
+
+/* --- Ссылка «Загрузить другой снимок» (компактная, в шапке) -------------- */
+
+.another-file {
+    display: inline-block;
+    flex-shrink: 0;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--accent);
+    background-color: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+}
+
+.another-file:hover {
+    background-color: #eff6ff;
+}
+
+/* --- Результаты -------------------------------------------------------- */
+
+.results {
+    margin-top: 8px;
+}
+
+.results h2 {
+    margin: 0 0 24px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* --- Карточка заключения модели ---------------------------------------- */
+
+.verdict-card {
+    margin-bottom: 32px;
+    padding: 20px 24px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-left-style: solid;
+    border-radius: 8px;
+}
+
+.verdict-ok {
+    border-left-color: #059669;
+}
+
+.verdict-warn {
+    border-left-color: #dc2626;
+}
+
+.verdict-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+}
+
+.verdict-class {
+    margin: 4px 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.verdict-ok .verdict-class {
+    color: #059669;
+}
+
+.verdict-warn .verdict-class {
+    color: #dc2626;
+}
+
+.verdict-confidence {
+    color: var(--muted);
+    font-size: 15px;
+}
+
+.verdict-confidence strong {
+    color: var(--text);
+}
+
+/* --- Таблица вероятностей ----------------------------------------------- */
+
+.probabilities-block {
+    margin-bottom: 32px;
+}
+
+.probabilities-block h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.prob-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 15px;
+}
+
+.prob-table th,
+.prob-table td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.prob-table thead th {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background-color: #f9fafb;
+}
+
+.prob-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.prob-table .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.prob-table tr.predicted td {
+    background-color: #eff6ff;
+    font-weight: 600;
+}
+
+.badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background-color: #dbeafe;
+    border-radius: 999px;
+    vertical-align: middle;
+}
+
+.bar-cell {
+    width: 45%;
+}
+
+.bar {
+    height: 8px;
+    background-color: var(--code-bg);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.bar span {
+    display: block;
+    height: 100%;
+    min-width: 3px;
+    background-color: var(--accent);
+    border-radius: 999px;
+}
+
+/* --- Ссылка на CSV и дисклеймер ------------------------------------------ */
+
+.csv-link-wrap {
+    margin: 0 0 8px;
+}
+
+.csv-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.disclaimer {
+    margin: 16px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.image-card {
+    margin: 0;
+}
+
+.image-card figcaption {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.image-card img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+/* --- Узкие экраны: изображения друг под другом -------------------------- */
+
+@media (max-width: 480px) {
+    .images {
+        grid-template-columns: 1fr;
+    }
+}

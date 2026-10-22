@@ -1,0 +1,109 @@
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>МРТ-ассистент — анализ снимков головного мозга</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <main class="container">
+            <header class="page-header">
+                <div class="header-text">
+                    <h1><a href="/">МРТ-ассистент</a></h1>
+                    <p class="intro">
+                        Загрузите МРТ-снимок головного мозга (PNG или JPG) — модель
+                        определит наличие и тип опухоли и подсветит её на снимке.
+                    </p>
+                </div>
+                {% if result_url %}
+                <a class="another-file" href="/">Загрузить другой снимок</a>
+                {% endif %}
+            </header>
+
+            {% if error %}
+            <section class="error" role="alert">
+                <p>{{ error }}</p>
+            </section>
+            {% endif %}
+
+            {% if not result_url %}
+            <section class="upload-section">
+                <form class="upload-form" action="/process" method="post" enctype="multipart/form-data">
+                    <label for="file-input">Снимок</label>
+                    <input
+                        type="file"
+                        id="file-input"
+                        name="file"
+                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                        required
+                    >
+                    <button type="submit">Проанализировать</button>
+                </form>
+            </section>
+            {% endif %}
+
+            {% if result_url %}
+            <section class="results">
+                <h2>Результаты анализа</h2>
+
+                <div class="images">
+                    <figure class="image-card">
+                        <figcaption>Исходный снимок</figcaption>
+                        <img src="{{ result_url }}/input.png" alt="Исходный снимок">
+                    </figure>
+
+                    <figure class="image-card">
+                        <figcaption>Снимок с подсветкой сегментации</figcaption>
+                        <img src="{{ result_url }}/output.png" alt="Снимок с подсветкой сегментации">
+                    </figure>
+                </div>
+
+                <div class="verdict-card {% if result.class == 'Опухоли нет' %}verdict-ok{% else %}verdict-warn{% endif %}">
+                    <div class="verdict-label">Заключение модели</div>
+                    <div class="verdict-class">{{ result.class }}</div>
+                    <div class="verdict-confidence">
+                        Уверенность модели: <strong>{{ "%.1f"|format(result.confidence * 100) }}%</strong>
+                    </div>
+                </div>
+
+                <div class="probabilities-block">
+                    <h3>Вероятности по классам</h3>
+                    <table class="prob-table">
+                        <thead>
+                            <tr>
+                                <th>Класс</th>
+                                <th>Распределение</th>
+                                <th class="num">Вероятность</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for class_name, probability in probabilities %}
+                            <tr {% if class_name == result.class %}class="predicted"{% endif %}>
+                                <td>
+                                    {{ class_name }}
+                                    {% if class_name == result.class %}<span class="badge">предсказано</span>{% endif %}
+                                </td>
+                                <td class="bar-cell">
+                                    <div class="bar"><span style="width: {{ (probability * 100)|round(1) }}%"></span></div>
+                                </td>
+                                <td class="num">{{ "%.2f"|format(probability * 100) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="csv-link-wrap">
+                    <a class="csv-link" href="{{ result_url }}/data.csv" download>Скачать данные анализа (CSV)</a>
+                </p>
+
+                <p class="disclaimer">
+                    Результат носит справочный характер и не является
+                    медицинской диагностикой.
+                </p>
+            </section>
+            {% endif %}
+        </main>
+    </body>
+    </html>
