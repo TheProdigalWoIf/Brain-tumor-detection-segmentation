@@ -6,6 +6,7 @@ __pycache__/
 .DS_Store
 
 data/
+data_original/
 analysis_view/
 cache/
 uploads/
@@ -21,6 +22,19 @@ plane_embeddings.npz
 2learning.ipynb
 fold_comparison.csv
 plane_labels.csv
+clean_split.csv
+compare_old_new.py
+*.npy
+errors_test.csv
+file_hashes.csv
+make_clean_split.py
+train_classifier_TEST.ipynb
+train_clean_cv.py
+train_clean_cv_noAdam.py
+train_type_cv.py
 
 r18/
 r34/
+r34_clean/
+r34_clean_sgd_nesterov/
+r34_type/
