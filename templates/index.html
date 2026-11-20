@@ -1,51 +1,99 @@
-    <!DOCTYPE html>
-    <html lang="ru">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>МРТ-ассистент — анализ снимков головного мозга</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
-    <body>
-        <main class="container">
-            <header class="page-header">
-                <div class="header-text">
-                    <h1><a href="/">МРТ-ассистент</a></h1>
-                    <p class="intro">
-                        Загрузите МРТ-снимок головного мозга (PNG или JPG) — модель
-                        определит наличие и тип опухоли и подсветит её на снимке.
-                    </p>
-                </div>
-                {% if result_url %}
-                <a class="another-file" href="/">Загрузить другой снимок</a>
-                {% endif %}
-            </header>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МРТ-ассистент — анализ снимков головного мозга</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <header class="page-header">
+            <div class="header-text">
+                <h1><a href="/">МРТ-ассистент</a></h1>
+                <p class="intro">
+                    Загрузите один или несколько МРТ-снимков головного мозга (PNG, JPG, BMP, TIFF и WebP) —
+                    модель определит наличие и тип опухоли и подсветит её на снимке.
+                </p>
+            </div>
+            {% if items %}
+            <a class="another-file" href="/">Загрузить другие снимки</a>
+            {% endif %}
+        </header>
 
-            {% if error %}
-            <section class="error" role="alert">
-                <p>{{ error }}</p>
-            </section>
+        {% if error %}
+        <section class="error" role="alert">
+            <p>{{ error }}</p>
+        </section>
+        {% endif %}
+
+        {% if not items %}
+        <section class="upload-section">
+            <form class="upload-form" action="/process" method="post" enctype="multipart/form-data">
+                <label for="file-input">Снимки</label>
+                <input
+                    type="file"
+                    id="file-input"
+                    name="files"
+                    accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp,image/png,image/jpeg,image/bmp,image/tiff,image/webp"
+                    multiple
+                    required
+                >
+                <button type="submit">Проанализировать</button>
+            </form>
+        </section>
+        {% endif %}
+
+        {% if items %}
+        <section class="results">
+            <h2>Результаты анализа</h2>
+
+            {% if items|length > 1 %}
+            <table class="prob-table summary-table">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Файл</th>
+                        <th>Заключение</th>
+                        <th class="num">Уверенность</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><a href="#result-{{ loop.index }}">{{ item.name }}</a></td>
+                        {% if item.error %}
+                        <td colspan="3">Ошибка: {{ item.error }}</td>
+                        {% else %}
+                        <td>{{ item.result.class }}</td>
+                        <td class="num">{{ "%.1f"|format(item.result.confidence * 100) }}%</td>
+                        <td>{% if item.result.uncertain %}сомнительно{% else %}—{% endif %}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% endif %}
 
-            {% if not result_url %}
-            <section class="upload-section">
-                <form class="upload-form" action="/process" method="post" enctype="multipart/form-data">
-                    <label for="file-input">Снимок</label>
-                    <input
-                        type="file"
-                        id="file-input"
-                        name="file"
-                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
-                        required
-                    >
-                    <button type="submit">Проанализировать</button>
-                </form>
-            </section>
+            {% if zip_url %}
+            <p class="csv-link-wrap">
+                <a class="csv-link" href="{{ zip_url }}" download="mri_conclusions.zip">Скачать все результаты одним архивом (ZIP)</a>
+            </p>
             {% endif %}
 
-            {% if result_url %}
-            <section class="results">
-                <h2>Результаты анализа</h2>
+            {% for item in items %}
+            <article class="result-item" id="result-{{ loop.index }}">
+                <h3 class="result-title">{{ loop.index }}. {{ item.name }}</h3>
+
+                {% if item.error %}
+                <section class="error" role="alert">
+                    <p>{{ item.error }}</p>
+                </section>
+                {% else %}
+                {% set result = item.result %}
+                {% set result_url = item.result_url %}
 
                 <div class="images">
                     <figure class="image-card">
@@ -53,10 +101,16 @@
                         <img src="{{ result_url }}/input.png" alt="Исходный снимок">
                     </figure>
 
+                    {% if item.segmentation_done %}
                     <figure class="image-card">
                         <figcaption>Снимок с подсветкой сегментации</figcaption>
                         <img src="{{ result_url }}/output.png" alt="Снимок с подсветкой сегментации">
                     </figure>
+                    {% else %}
+                    <div class="image-card no-segmentation">
+                        <p>Опухоль не обнаружена, подсветка не строилась.</p>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="verdict-card {% if result.class == 'Опухоли нет' %}verdict-ok{% else %}verdict-warn{% endif %}">
@@ -66,6 +120,20 @@
                         Уверенность модели: <strong>{{ "%.1f"|format(result.confidence * 100) }}%</strong>
                     </div>
                 </div>
+
+                {% if result.uncertain %}
+                <div class="uncertain-notice" role="alert">
+                    <strong>Результат сомнительный.</strong>
+                    Рекомендуется внимательный просмотр врачом.
+                    {% if result.reasons %}
+                    <ul>
+                        {% for reason in result.reasons %}
+                        <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
 
                 <div class="probabilities-block">
                     <h3>Вероятности по классам</h3>
@@ -78,7 +146,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for class_name, probability in probabilities %}
+                            {% for class_name, probability in item.probabilities %}
                             <tr {% if class_name == result.class %}class="predicted"{% endif %}>
                                 <td>
                                     {{ class_name }}
@@ -95,15 +163,22 @@
                 </div>
 
                 <p class="csv-link-wrap">
-                    <a class="csv-link" href="{{ result_url }}/data.csv" download>Скачать данные анализа (CSV)</a>
+                    <a class="csv-link" href="{{ result_url }}/data.csv" download="{{ item.csv_name }}">Скачать данные анализа (CSV)</a>
                 </p>
 
-                <p class="disclaimer">
-                    Результат носит справочный характер и не является
-                    медицинской диагностикой.
+                <p class="csv-link-wrap">
+                    <a class="csv-link" href="{{ item.review_url }}">Проверить и составить заключение</a>
                 </p>
-            </section>
-            {% endif %}
-        </main>
-    </body>
-    </html>
+                {% endif %}
+            </article>
+            {% endfor %}
+
+            <p class="disclaimer">
+                Результат носит справочный характер и не является
+                медицинской диагностикой.
+            </p>
+        </section>
+        {% endif %}
+    </main>
+</body>
+</html>

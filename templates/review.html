@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка заключения — {{ report.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='review.css') }}">
+</head>
+<body>
+    <main class="container review-page">
+        <header class="page-header">
+            <div class="header-text">
+                <h1><a href="/">МРТ-ассистент</a></h1>
+                <p class="intro">Проверка заключения: <strong>{{ report.name }}</strong></p>
+            </div>
+            <a class="another-file" href="/">На главную</a>
+        </header>
+
+        <div class="review-grid">
+            <section class="review-viewer">
+                <h2>Снимок и области</h2>
+
+                <div class="canvas-wrap">
+                    <canvas id="view" width="448" height="448"></canvas>
+                </div>
+
+                <div class="tools">
+                    <button type="button" id="tool-brush" class="tool active">Кисть: добавить область</button>
+                    <button type="button" id="tool-eraser" class="tool">Ластик: убрать</button>
+                    <label class="tool-label">Размер
+                        <input type="range" id="brush-size" min="1" max="20" value="4">
+                    </label>
+                    <label class="tool-label">
+                        <input type="checkbox" id="show-mask" checked> Показывать области
+                    </label>
+                    <button type="button" id="reset-mask" class="tool">Вернуть области модели</button>
+                    <button type="button" id="clear-mask" class="tool">Убрать все области</button>
+                </div>
+
+                <h3>Находки</h3>
+                <ul id="regions" class="regions"></ul>
+            </section>
+
+            <section class="review-editor">
+                <h2>Проект заключения</h2>
+
+                {% for s in sections_meta %}
+                <label class="field-label" for="sec-{{ s.key }}">{{ s.title }}</label>
+                <textarea id="sec-{{ s.key }}" rows="{{ s.rows }}"></textarea>
+                {% endfor %}
+
+                <label class="field-label" for="doctor">Врач (ФИО)</label>
+                <input type="text" id="doctor" maxlength="120" autocomplete="off">
+
+                <div class="actions">
+                    <button type="button" id="save" class="primary">Сохранить заключение</button>
+                    <span id="status" class="status"></span>
+                </div>
+
+                <div id="downloads" class="downloads" hidden>
+                    <a id="dl-html" href="#">Скачать документ (HTML, печать в PDF)</a>
+                    <a id="dl-txt" href="#">Скачать текст (TXT)</a>
+                </div>
+
+                <p class="disclaimer">
+                    Проект составлен автоматически и требует проверки врачом. Результат носит справочный характер
+                    и не является диагнозом.
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <script>window.REVIEW = {{ cfg|tojson }};</script>
+    <script src="{{ url_for('static', filename='review.js') }}"></script>
+</body>
+</html>

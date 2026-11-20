@@ -20,6 +20,7 @@ WEIGHTS_PATH = os.path.join(
 )
 
 IMAGE_SIZE = 224
+VIEW_SIZE = 448
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -72,21 +73,55 @@ preprocess_image = Compose([
 ])
 
 
-def segment_image(input_path, output_path):
+def _frame(input_path):
+    """Предобработанный кадр 224×224 в виде тензора [1, 1, 224, 224]."""
     with Image.open(input_path) as img:
         image = img.convert("L")
+    array = np.array(image, dtype=np.float32) / 255.0
+    return preprocess_image(array).unsqueeze(0).to(DEVICE)
 
-    arr = np.array(image, dtype=np.float32) / 255.0
-    tensor = preprocess_image(arr).unsqueeze(0).to(DEVICE)
+
+def _save_view(tensor, view_path):
+    """Сохраняет кадр для просмотра (448×448) и возвращает его в виде массива 224×224."""
+    base = np.clip(tensor[0, 0].cpu().numpy() * 255, 0, 255).astype(np.uint8)
+    Image.fromarray(base).resize(
+        (VIEW_SIZE, VIEW_SIZE), resample=Image.Resampling.BILINEAR
+    ).save(view_path)
+    return base
+
+
+def prepare_view(input_path, view_path):
+    """Кадр для просмотра без сегментации (для снимков без найденной опухоли)."""
+    os.makedirs(os.path.dirname(os.path.abspath(view_path)), exist_ok=True)
+    _save_view(_frame(input_path), view_path)
+    return view_path
+
+
+def segment_image(input_path, output_path):
+    """Строит маску и сохраняет рядом с output_path три файла в одной системе координат (кадр 224×224):
+
+    output.png  кадр 448×448 с красной подсветкой области;
+    view.png    кадр 448×448 без подсветки (для страницы проверки);
+    mask.png    бинарная маска 224×224 (255 = область).
+    """
+    out_dir = os.path.dirname(os.path.abspath(output_path))
+    os.makedirs(out_dir, exist_ok=True)
+
+    tensor = _frame(input_path)
 
     with torch.no_grad():
-        pred = model(tensor)[0, 0].cpu().numpy()
+        prediction = model(tensor)[0, 0].cpu().numpy()
 
-    base = (tensor[0, 0].cpu().numpy() * 255).astype(np.uint8)
+    mask = prediction >= 0.5
+
+    base = _save_view(tensor, os.path.join(out_dir, "view.png"))
+    Image.fromarray(mask.astype(np.uint8) * 255).save(os.path.join(out_dir, "mask.png"))
+
     rgb = np.stack([base] * 3, axis=-1)
-    m = pred >= 0.5
-    rgb[m] = (0.5 * rgb[m] + 0.5 * np.array([255, 0, 0])).astype(np.uint8)
+    red = np.array([255, 0, 0])
+    rgb[mask] = (0.5 * rgb[mask] + 0.5 * red).astype(np.uint8)
+    Image.fromarray(rgb).resize(
+        (VIEW_SIZE, VIEW_SIZE), resample=Image.Resampling.NEAREST
+    ).save(output_path)
 
-    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    Image.fromarray(rgb).resize((448, 448), Image.Resampling.BILINEAR).save(output_path)
     return output_path
